@@ -298,10 +298,11 @@ Methods called in a state that does not allow them raise Insta360Error. All
 blocking SDK calls release the GIL. close() may be called from any thread,
 including while another thread is blocked in read_video().
 
-Stream data is raw SDK data. IMU accelerations are in g (not m/s^2) and
-gyro rates in rad/s. Video and IMU timestamps are in unspecified units and come
-from clocks that are not comparable with each other; stamp samples with your
-own receipt time to align the streams.
+Stream data is raw SDK data. Per real-hardware findings of the reference
+bridge, IMU accelerations are in g (not m/s^2); gyro rates are assumed to be
+rad/s. Video and IMU timestamps are in unspecified units and come from clocks
+that are not comparable with each other; stamp samples with your own receipt
+time to align the streams.
 )doc")
       .def(py::init<std::optional<std::string>>(), py::arg("serial") = py::none())
       .def("open", &PyCamera::Open, NoGil(),
@@ -387,7 +388,8 @@ own receipt time to align the streams.
           py::arg("timeout") = 0.0,
           "All pending IMU samples as a structured array (fields timestamp, ax, ay, az, gx, gy, "
           "gz; layout identical to the SDK's GyroData). Waits up to `timeout` seconds for at "
-          "least one sample. Acceleration is in g, gyro in rad/s, timestamp in raw SDK units.")
+          "least one sample. Acceleration is in g (not m/s^2), gyro is assumed rad/s, "
+          "timestamp is in raw SDK units.")
       .def("read_exposure", [](PyCamera& cam) {
         py::gil_scoped_release nogil;
         std::vector<std::pair<double, double>> out;
