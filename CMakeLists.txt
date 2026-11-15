@@ -30,7 +30,9 @@ find_package(Python 3.10 REQUIRED COMPONENTS Interpreter Development.Module)
 find_package(pybind11 CONFIG REQUIRED)
 
 pybind11_add_module(_sdk MODULE
-  src/module.cc)
+  src/module.cc
+  src/py_camera.cc
+  src/stream_queues.cc)
 target_include_directories(_sdk PRIVATE src "${INSTA360_SDK_DIR}/include")
 target_compile_options(_sdk PRIVATE -Wall -Wextra)
 target_link_libraries(_sdk PRIVATE "${INSTA360_SDK_LIB}")

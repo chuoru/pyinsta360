@@ -1,1 +1,71 @@
-from ._sdk import *  # noqa: F401,F403
+"""Python bindings for the Insta360 CameraSDK."""
+from ._sdk import (
+    BatteryStatus,
+    Camera,
+    CameraFunctionMode,
+    CameraLensType,
+    CameraState,
+    CameraType,
+    CardLocation,
+    CardState,
+    ConnectionType,
+    DeviceInfo,
+    ExposureMode,
+    ExposureSettings,
+    Insta360Error,
+    LiveStreamParam,
+    LogLevel,
+    MediaUrl,
+    PowerType,
+    PreviewParam,
+    RawCaptureType,
+    RecordParams,
+    StorageStatus,
+    VideoEncodeType,
+    VideoPacket,
+    VideoResolution,
+    discover,
+    sdk_version,
+    sdk_version_major,
+    set_log_level,
+    set_log_path,
+)
+
+try:
+    from importlib.metadata import version as _version
+
+    __version__ = _version("pyinsta360")
+except Exception:  # not installed (e.g. running from a source checkout)
+    __version__ = "0+unknown"
+
+__all__ = [
+    "BatteryStatus",
+    "Camera",
+    "CameraFunctionMode",
+    "CameraLensType",
+    "CameraState",
+    "CameraType",
+    "CardLocation",
+    "CardState",
+    "ConnectionType",
+    "DeviceInfo",
+    "ExposureMode",
+    "ExposureSettings",
+    "Insta360Error",
+    "LiveStreamParam",
+    "LogLevel",
+    "MediaUrl",
+    "PowerType",
+    "PreviewParam",
+    "RawCaptureType",
+    "RecordParams",
+    "StorageStatus",
+    "VideoEncodeType",
+    "VideoPacket",
+    "VideoResolution",
+    "discover",
+    "sdk_version",
+    "sdk_version_major",
+    "set_log_level",
+    "set_log_path",
+]
