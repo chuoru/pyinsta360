@@ -43,9 +43,21 @@ Observed on 2026-11-16 (3-second recording):
 
 The origin URL has the right base name (`VID_…_00_007`) and the wrong extension. It looks like the extension is taken from the LRV entry when the origin URL is built. That is an inference from the output, not confirmed.
 
-## How this was observed
+## Reproduced with the plain C++ API
 
-The observation above was made through a Python binding that copies `MediaUrl::OriginUrls()` and `LRVUrls()` without modification. The attached `repro.cc` makes the same calls directly against the C++ API. It compiles against SDK 2.1.8 but has not yet been run on the camera.
+The first observation was made through a Python binding that copies `MediaUrl::OriginUrls()` and `LRVUrls()` without modification. The attached `repro.cc` makes the same calls directly against the C++ API, with no binding involved. Run on the same camera on 2026-11-16 (`./repro 3 --delete`, camera in function mode 8, `FUNCTION_MODE_HDR_IMAGE`), it reproduced the problem:
+
+```
+returned origin: /DCIM/Camera01/VID_20261116_055409_00_006.lrv
+returned lrv:    /DCIM/Camera01/LRV_20261116_055409_01_006.lrv
+new on camera:   /DCIM/Camera01/LRV_20261116_055409_01_006.lrv
+new on camera:   /DCIM/Camera01/VID_20261116_055409_00_006.insv
+BAD  listed=0 downloaded=0 /DCIM/Camera01/VID_20261116_055409_00_006.lrv
+OK   listed=1 downloaded=1 /DCIM/Camera01/LRV_20261116_055409_01_006.lrv
+RESULT: returned MediaUrl names a file that does not exist
+```
+
+Two out of two recordings showed the same wrong extension.
 
 ## Suggested fix
 
