@@ -73,7 +73,7 @@ Stream data is passed through in raw SDK units.
 
 ## Known issues
 
-- **SDK crash during discovery.** Upstream report draft and reproducer: `docs/sdk-bugs/discovery-crash/`. CameraSDK 2.1.8 sometimes aborts the process with `std::bad_function_call` during `discover()` or `Camera.open()`. The exception is thrown on the SDK's own session thread, so pyinsta360 cannot catch it. A plain C++ program reproduces it (4 of 10 runs under CPU load). In Python on an idle machine it hit between 0 of 10 and 6 of 10 runs. Retrying the process works, and `run_supervised` does that for you:
+- **SDK crash during discovery.** Reported upstream as [Insta360Develop/Desktop-CameraSDK-Cpp#95](https://github.com/Insta360Develop/Desktop-CameraSDK-Cpp/issues/95). Report and reproducer: `docs/sdk-bugs/discovery-crash/`. CameraSDK 2.1.8 sometimes aborts the process with `std::bad_function_call` during `discover()` or `Camera.open()`. The exception is thrown on the SDK's own session thread, so pyinsta360 cannot catch it. A plain C++ program reproduces it (4 of 10 runs under CPU load). In Python on an idle machine it hit between 0 of 10 and 6 of 10 runs. Retrying the process works, and `run_supervised` does that for you:
 
   ```python
   import pyinsta360
@@ -84,7 +84,7 @@ Stream data is passed through in raw SDK units.
   if __name__ == "__main__":
       pyinsta360.run_supervised(main)
   ```
-- **Wrong clip path from `stop_recording()`.** Upstream report draft and reproducer: `docs/sdk-bugs/stop-recording-url/`. With SDK 2.1.8 on an X3, the returned origin URL ended in `.lrv` while the file on the card ends in `.insv`. Downloading the returned path fails. pyinsta360 passes the SDK's URLs through unchanged. To find a new recording, diff `files_list()` from before and after.
+- **Wrong clip path from `stop_recording()`.** Reported upstream as [Insta360Develop/Desktop-CameraSDK-Cpp#96](https://github.com/Insta360Develop/Desktop-CameraSDK-Cpp/issues/96). Report and reproducer: `docs/sdk-bugs/stop-recording-url/`. With SDK 2.1.8 on an X3, the returned origin URL ended in `.lrv` while the file on the card ends in `.insv`. Downloading the returned path fails. pyinsta360 passes the SDK's URLs through unchanged. To find a new recording, diff `files_list()` from before and after.
 - **Multiple video streams.** Some modes deliver each lens as its own stream. The X3 in `RES_2880_2880P30` mode sends `stream_index` 0 and 1 with independent timestamps. Group packets by `stream_index` and use one `VideoDecoder` per stream.
 
 ## Supervised runs
