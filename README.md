@@ -73,7 +73,7 @@ Stream data is passed through in raw SDK units.
 
 ## Known issues
 
-- **SDK crash during discovery.** CameraSDK 2.1.8 sometimes aborts the process with `std::bad_function_call` during `discover()` or `Camera.open()`. The exception is thrown on the SDK's own session thread, so pyinsta360 cannot catch it. A plain C++ program reproduces it (4 of 10 runs under CPU load). In Python on an idle machine it hit between 0 of 10 and 6 of 10 runs. Retrying the process works, and `run_supervised` does that for you:
+- **SDK crash during discovery.** Upstream report draft and reproducer: `docs/sdk-bugs/discovery-crash/`. CameraSDK 2.1.8 sometimes aborts the process with `std::bad_function_call` during `discover()` or `Camera.open()`. The exception is thrown on the SDK's own session thread, so pyinsta360 cannot catch it. A plain C++ program reproduces it (4 of 10 runs under CPU load). In Python on an idle machine it hit between 0 of 10 and 6 of 10 runs. Retrying the process works, and `run_supervised` does that for you:
 
   ```python
   import pyinsta360
