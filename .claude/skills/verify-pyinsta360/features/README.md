@@ -8,6 +8,7 @@ This directory is the maintained source for verifying what a Python user of pyin
 | Live streaming (video + IMU) | [live-streaming.md](live-streaming.md) | `stream` |
 | Decoding frames | [decoding.md](decoding.md) | `stream --save-frame` |
 | Camera files | [camera-files.md](camera-files.md) | `files` |
+| Supervised runs | [supervised-runs.md](supervised-runs.md) | `supervised` |
 | Photo and video capture | [capture.md](capture.md) | `capture` |
 
 ## Baseline preconditions

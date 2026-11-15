@@ -51,6 +51,7 @@ $S/drive.sh fake|real <journey> [journey args]
 | `discover_open` | `discover()`, `Camera` lifecycle, wrong-state error, identity, battery | none |
 | `stream` | `start_live_streaming`, `read_video`, `read_imu`, `stream_stats`, stop. `--seconds N`, `--video-queue N`, `--read-delay S`, `--save-frame` (decode via PyAV, real only) | none |
 | `files` | `files_list`, `download_file` with progress into the evidence dir. `--remote PATH` | reads media off the card |
+| `supervised` | `run_supervised` around discover+open+battery, N times. `--iterations N`, `--retries N`. Counts discovery crashes caught and retried | none |
 | `capture` | `take_photo`, `start_recording`/`stop_recording` | **writes** a photo and a clip to the camera. Refuses on `real` without `--allow-camera-writes` |
 
 Failure paths on the fake come from env knobs passed straight through: `FAKE_INSTA360_NO_DEVICES=1`, `FAKE_INSTA360_DEVICE_COUNT=N`, `FAKE_INSTA360_OPEN_FAIL=1`, `FAKE_INSTA360_STREAM_FAIL=1`, `FAKE_INSTA360_ACTION_FAIL=1`, `FAKE_INSTA360_VIDEO_HZ=F`, `FAKE_INSTA360_GYRO_BATCH=N`. Example: `$S/drive.sh fake stream --video-queue 2 --read-delay 0.2` acts as a slow consumer and forces queue drops.
@@ -70,7 +71,7 @@ Proof standards:
 - Drive the public `pyinsta360` API the way a user would. Never call `_sdk` internals or fake-only hooks to force a state.
 - A fake-backend PASS proves binding behavior only. Claims about the camera (frame rate, IMU rate, units, decodability, file writes) need a `real` run, and the report must say which backend produced each claim.
 - Check side effects, not only return values. Downloads must exist on disk with non-zero size. Captures must grow the camera's file list (the `real` capture journey checks this).
-- **Known SDK crash, not ours.** About 1 run in 3 on real hardware, the process dies with exit 134 and `terminate called after throwing an instance of 'std::bad_function_call'` during `discover()` or `Camera.open()`. The throw is on the SDK's own `CameraSession::ReadLoop` thread. A plain C++ program with no Python reproduces it (4 of 10 runs under CPU load, SDK 2.1.8). Rerun the journey. Report a run as failed only if it fails for another reason or aborts on every one of three tries.
+- **Known SDK crash, not ours.** About 1 run in 3 on real hardware, the process dies with exit 134 and `terminate called after throwing an instance of 'std::bad_function_call'` during `discover()` or `Camera.open()`. The throw is on the SDK's own `CameraSession::ReadLoop` thread. A plain C++ program with no Python reproduces it (4 of 10 runs under CPU load, SDK 2.1.8). Rerun the journey. Report a run as failed only if it fails for another reason or aborts on every one of three tries. The `supervised` journey is the exception. It exists to show `run_supervised` absorbing this crash, so there it must never abort.
 - The SDK writes `usb_device_detector` warnings to stderr on every discovery with no camera. They are not failures.
 
 ## Cleanup
