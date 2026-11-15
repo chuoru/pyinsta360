@@ -71,6 +71,11 @@ Stream data is passed through in raw SDK units.
 - Findings from the reference bridge worth knowing: `LiveStreamParam.using_lrv=True` delivered no
   video in dual-lens (360) mode, and the camera may ignore the requested preview resolution.
 
+## Known issues
+
+- **SDK crash during discovery.** CameraSDK 2.1.8 sometimes aborts the process with `std::bad_function_call` during `discover()` or `Camera.open()`. The exception is thrown on the SDK's own session thread, so pyinsta360 cannot catch it. A plain C++ program reproduces it (4 of 10 runs under CPU load). In Python on an idle machine it hit between 0 of 10 and 6 of 10 runs. Retrying the process works. Run discovery in a supervised process if a crash is unacceptable.
+- **Multiple video streams.** Some modes deliver each lens as its own stream. The X3 in `RES_2880_2880P30` mode sends `stream_index` 0 and 1 with independent timestamps. Group packets by `stream_index` and use one `VideoDecoder` per stream.
+
 ## Threading model
 
 - The SDK calls back on one of its own threads, and a video callback delays the gyro callback queued

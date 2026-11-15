@@ -1,6 +1,9 @@
 """Decode the camera's H.264/H.265 preview stream into RGB frames.
 
 Requires PyAV: ``pip install pyinsta360[decode]``.
+
+A decoder holds one bitstream. In modes that send each lens as its own stream, create one
+VideoDecoder per ``VideoPacket.stream_index``.
 """
 from typing import List
 

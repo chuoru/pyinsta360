@@ -30,6 +30,7 @@ Preconditions:
 
 ## Gotchas
 
+- Exit 134 with `std::bad_function_call` is the known SDK discovery race (see SKILL.md Evidence). Rerun.
 - SDK log `found 1 Insta360 usb device(s)` followed by `discovered: []` means the USB node is not writable by your user. Doctor shows `not writable`. Install the udev rule from SKILL.md Launch. This is not a binding bug.
 - With no camera, the real SDK logs `usb_device_detector ... no Insta360 ... usb device found` to stderr. That is normal.
 - `drive.sh real` refuses (exit 3) when the bridge container or another process holds the camera. Report the holder and do not kill it.

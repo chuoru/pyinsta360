@@ -70,6 +70,7 @@ Proof standards:
 - Drive the public `pyinsta360` API the way a user would. Never call `_sdk` internals or fake-only hooks to force a state.
 - A fake-backend PASS proves binding behavior only. Claims about the camera (frame rate, IMU rate, units, decodability, file writes) need a `real` run, and the report must say which backend produced each claim.
 - Check side effects, not only return values. Downloads must exist on disk with non-zero size. Captures must grow the camera's file list (the `real` capture journey checks this).
+- **Known SDK crash, not ours.** About 1 run in 3 on real hardware, the process dies with exit 134 and `terminate called after throwing an instance of 'std::bad_function_call'` during `discover()` or `Camera.open()`. The throw is on the SDK's own `CameraSession::ReadLoop` thread. A plain C++ program with no Python reproduces it (4 of 10 runs under CPU load, SDK 2.1.8). Rerun the journey. Report a run as failed only if it fails for another reason or aborts on every one of three tries.
 - The SDK writes `usb_device_detector` warnings to stderr on every discovery with no camera. They are not failures.
 
 ## Cleanup

@@ -38,11 +38,13 @@ with pi.Camera(args.serial) as cam:
     check(cam.read_video(timeout=0.2) is None, "read_video() after stop returns None")
 
 imu = np.concatenate(imu_chunks) if imu_chunks else np.zeros(0)
-ts = [p.timestamp for p in packets]
+by_stream = {}
+for p in packets:
+    by_stream.setdefault(p.stream_index, []).append(p)
 summary = {
     "seconds": elapsed, "encode_type": str(encode_type),
     "video_packets": len(packets), "video_fps": len(packets) / elapsed,
-    "video_bytes": sum(len(p) for p in packets), "stream_indices": sorted({p.stream_index for p in packets}),
+    "video_bytes": sum(len(p) for p in packets), "packets_per_stream": {k: len(v) for k, v in sorted(by_stream.items())},
     "imu_samples": int(len(imu)), "imu_hz": len(imu) / elapsed,
     "imu_dtype": str(imu.dtype), "stats": stats,
 }
@@ -55,30 +57,33 @@ write_json("stream_summary.json", summary)
 check(len(packets) > 0, "received video packets")
 if args.read_delay:
     check(stats["video_dropped"] > 0, "a slow consumer makes the full video queue drop and count packets")
-check(all(b > a for a, b in zip(ts, ts[1:])), "video timestamps strictly increase")
+for idx, stream in sorted(by_stream.items()):
+    ts = [p.timestamp for p in stream]
+    check(all(b > a for a, b in zip(ts, ts[1:])), f"stream {idx}: video timestamps strictly increase")
 check(len(imu) > 0, "received IMU samples")
 check(list(imu.dtype.names or []) == ["timestamp", "ax", "ay", "az", "gx", "gy", "gz"], "IMU dtype fields match GyroData")
-if packets:
-    (EVIDENCE / "first_packet.bin").write_bytes(packets[0].data)
+for idx, stream in by_stream.items():
+    (EVIDENCE / f"first_packet_stream{idx}.bin").write_bytes(stream[0].data)
 if len(imu):
     np.save(EVIDENCE / "imu_head.npy", imu[:200])
 if BACKEND == "real" and len(imu):
     check(0.8 < summary["accel_norm_median_g"] < 1.2, "accel magnitude near 1 g (camera roughly still, units are g)")
 
 if args.save_frame and packets:
+    from PIL import Image
+
     from pyinsta360.decode import VideoDecoder
 
-    decoder = VideoDecoder(encode_type)
-    frames = []
-    for p in packets[:60]:
-        frames += decoder.decode(p)
-        if frames:
-            break
-    if not frames:
-        frames = decoder.flush()
-    if check(bool(frames), "decoded at least one frame from the first 60 packets"):
-        from PIL import Image
-
-        Image.fromarray(frames[0]).save(EVIDENCE / "frame.png")
-        print("frame.png", frames[0].shape)
+    for idx, stream in sorted(by_stream.items()):
+        decoder = VideoDecoder(encode_type)
+        frames = []
+        for p in stream[:60]:
+            frames += decoder.decode(p)
+            if frames:
+                break
+        if not frames:
+            frames = decoder.flush()
+        if check(bool(frames), f"stream {idx}: decoded a frame from its first 60 packets"):
+            Image.fromarray(frames[0]).save(EVIDENCE / f"frame_stream{idx}.png")
+            print(f"frame_stream{idx}.png", frames[0].shape)
 finish()
