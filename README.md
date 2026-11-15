@@ -84,7 +84,7 @@ Stream data is passed through in raw SDK units.
   if __name__ == "__main__":
       pyinsta360.run_supervised(main)
   ```
-- **Wrong clip path from `stop_recording()`.** With SDK 2.1.8 on an X3, the returned origin URL ended in `.lrv` while the file on the card ends in `.insv`. Downloading the returned path fails. pyinsta360 passes the SDK's URLs through unchanged. To find a new recording, diff `files_list()` from before and after.
+- **Wrong clip path from `stop_recording()`.** Upstream report draft and reproducer: `docs/sdk-bugs/stop-recording-url/`. With SDK 2.1.8 on an X3, the returned origin URL ended in `.lrv` while the file on the card ends in `.insv`. Downloading the returned path fails. pyinsta360 passes the SDK's URLs through unchanged. To find a new recording, diff `files_list()` from before and after.
 - **Multiple video streams.** Some modes deliver each lens as its own stream. The X3 in `RES_2880_2880P30` mode sends `stream_index` 0 and 1 with independent timestamps. Group packets by `stream_index` and use one `VideoDecoder` per stream.
 
 ## Supervised runs
