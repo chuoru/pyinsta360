@@ -7,9 +7,13 @@ The SDK is proprietary and is **not** part of this repository. You supply your o
 
 ## Install
 
+pyinsta360 ships as source only. It compiles on your machine against your own copy of the SDK,
+which you get by applying at <https://www.insta360.com/sdk/apply>.
+
 ```bash
-INSTA360_SDK_DIR=/path/to/insta360_sdk pip install .          # or: pip install -e .
-pip install '.[decode]'                                       # optional: PyAV for decoding
+INSTA360_SDK_DIR=/path/to/insta360_sdk pip install pyinsta360             # from PyPI
+INSTA360_SDK_DIR=/path/to/insta360_sdk pip install 'pyinsta360[decode]'   # plus PyAV for decoding
+INSTA360_SDK_DIR=/path/to/insta360_sdk pip install -e .                   # from a checkout
 ```
 
 `INSTA360_SDK_DIR` is the directory that contains `include/` and `lib/libCameraSDK.so`. The build
