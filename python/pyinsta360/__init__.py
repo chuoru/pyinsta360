@@ -1,7 +1,6 @@
 """Python bindings for the Insta360 CameraSDK."""
 from ._sdk import (
     BatteryStatus,
-    Camera,
     CameraFunctionMode,
     CameraLensType,
     CameraState,
@@ -24,12 +23,34 @@ from ._sdk import (
     VideoEncodeType,
     VideoPacket,
     VideoResolution,
-    discover,
     sdk_version,
     sdk_version_major,
     set_log_level,
     set_log_path,
 )
+
+from . import _guard, _sdk
+from .supervise import SupervisedProcessError, run_supervised
+
+
+class Camera(_sdk.Camera):
+    __doc__ = _sdk.Camera.__doc__
+
+    def open(self):
+        with _guard.discovering():
+            super().open()
+
+    def __enter__(self):
+        with _guard.discovering():
+            return super().__enter__()
+
+
+def discover():
+    with _guard.discovering():
+        return _sdk.discover()
+
+
+discover.__doc__ = _sdk.discover.__doc__
 
 try:
     from importlib.metadata import version as _version
@@ -60,10 +81,12 @@ __all__ = [
     "RawCaptureType",
     "RecordParams",
     "StorageStatus",
+    "SupervisedProcessError",
     "VideoEncodeType",
     "VideoPacket",
     "VideoResolution",
     "discover",
+    "run_supervised",
     "sdk_version",
     "sdk_version_major",
     "set_log_level",

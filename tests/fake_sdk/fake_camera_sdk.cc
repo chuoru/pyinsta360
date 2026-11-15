@@ -10,6 +10,10 @@
 //   FAKE_INSTA360_ACTION_FAIL=1    boolean camera actions return false
 //   FAKE_INSTA360_VIDEO_HZ=F       video packet rate (default 30)
 //   FAKE_INSTA360_GYRO_BATCH=N     gyro samples per video period (default 17)
+//   FAKE_INSTA360_DISCOVERY_CRASH_FILE=PATH
+//                                  if PATH holds an integer N>0, discovery rewrites it to N-1
+//                                  and then aborts the process the way SDK 2.1.8 does: an
+//                                  SDK-owned thread calls an empty std::function
 //
 // Introspection for tests (extern "C", loaded via ctypes) is at the bottom.
 
@@ -23,6 +27,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <functional>
 #include <map>
 #include <mutex>
 #include <set>
@@ -43,6 +48,22 @@ double EnvNumber(const char* name, double fallback) {
 [[noreturn]] void Die(const char* what) {
   std::fprintf(stderr, "fake CameraSDK contract violation: %s\n", what);
   std::abort();
+}
+
+void CrashIfRequested() {
+  const char* path = std::getenv("FAKE_INSTA360_DISCOVERY_CRASH_FILE");
+  if (!path || !*path) return;
+  int remaining = 0;
+  {
+    std::ifstream in(path);
+    in >> remaining;
+  }
+  if (remaining <= 0) return;
+  std::ofstream(path, std::ios::trunc) << remaining - 1;
+  std::thread([] {
+    std::function<void()> empty;
+    empty();  // throws std::bad_function_call on a thread nobody catches on
+  }).join();
 }
 
 struct NativeInfo {
@@ -219,6 +240,7 @@ std::string GetSDKVersion() { return "fake-0.0.1"; }
 int GetSDKVersionMajor() { return 0; }
 
 std::vector<DeviceDescriptor> DeviceDiscovery::GetAvailableDevices() {
+  CrashIfRequested();
   std::vector<DeviceDescriptor> out;
   if (EnvFlag("FAKE_INSTA360_NO_DEVICES")) return out;
   const int count = static_cast<int>(EnvNumber("FAKE_INSTA360_DEVICE_COUNT", 1));

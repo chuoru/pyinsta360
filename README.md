@@ -73,9 +73,33 @@ Stream data is passed through in raw SDK units.
 
 ## Known issues
 
-- **SDK crash during discovery.** CameraSDK 2.1.8 sometimes aborts the process with `std::bad_function_call` during `discover()` or `Camera.open()`. The exception is thrown on the SDK's own session thread, so pyinsta360 cannot catch it. A plain C++ program reproduces it (4 of 10 runs under CPU load). In Python on an idle machine it hit between 0 of 10 and 6 of 10 runs. Retrying the process works. Run discovery in a supervised process if a crash is unacceptable.
+- **SDK crash during discovery.** CameraSDK 2.1.8 sometimes aborts the process with `std::bad_function_call` during `discover()` or `Camera.open()`. The exception is thrown on the SDK's own session thread, so pyinsta360 cannot catch it. A plain C++ program reproduces it (4 of 10 runs under CPU load). In Python on an idle machine it hit between 0 of 10 and 6 of 10 runs. Retrying the process works, and `run_supervised` does that for you:
+
+  ```python
+  import pyinsta360
+
+  def main():  # module-level, so it can be pickled
+      with pyinsta360.Camera() as cam: ...
+
+  if __name__ == "__main__":
+      pyinsta360.run_supervised(main)
+  ```
 - **Wrong clip path from `stop_recording()`.** With SDK 2.1.8 on an X3, the returned origin URL ended in `.lrv` while the file on the card ends in `.insv`. Downloading the returned path fails. pyinsta360 passes the SDK's URLs through unchanged. To find a new recording, diff `files_list()` from before and after.
 - **Multiple video streams.** Some modes deliver each lens as its own stream. The X3 in `RES_2880_2880P30` mode sends `stream_index` 0 and 1 with independent timestamps. Group packets by `stream_index` and use one `VideoDecoder` per stream.
+
+## Supervised runs
+
+`run_supervised(target, *args, retries=3, **kwargs)` runs `target` in a spawned child process and
+returns its result. If the child is killed by a signal while inside `discover()` or `Camera.open()`,
+the target is rerun from the start (up to `retries` extra attempts, each logged as a warning on the
+`pyinsta360` logger). A crash anywhere else, or a nonzero exit with no result, raises
+`SupervisedProcessError` at once. Its `exitcode`, `attempts` and `during_discovery` say what
+happened. Exceptions raised by `target` are re-raised in the parent.
+
+- The target restarts from the beginning, so anything it did before `open()` repeats.
+- `target`, its arguments and its result must be picklable. Use a module-level function.
+- Notebooks that call `discover()` directly are not protected. Wrap the work in a function and
+  pass it to `run_supervised`.
 
 ## Threading model
 
