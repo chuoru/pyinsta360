@@ -29,6 +29,9 @@ with pi.Camera(args.serial) as cam:
         new = sorted(after - before)
         print("new files on camera:", new)
         check(len(new) >= 2, "camera file list grew by the photo and the clip")
+        for url in photo.origin_urls + video.origin_urls + video.lrv_urls:
+            if url not in after:
+                print(f"NOTE returned url {url} is not in files_list() (known SDK 2.1.8 bug for stop_recording; use files_list())")
     write_json("capture.json", {"photo": photo.origin_urls, "video": video.origin_urls,
                                 "lrv": video.lrv_urls, "new_files": sorted(after - before)})
 finish()
