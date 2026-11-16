@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "pyinsta360"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python bindings for the Insta360 CameraSDK (X3 tested; X4/X5 nominal)"
 readme = "README.md"
 requires-python = ">=3.10"
