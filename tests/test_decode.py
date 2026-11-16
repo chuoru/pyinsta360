@@ -80,3 +80,39 @@ def test_missing_pyav_gives_a_clear_error(monkeypatch):
 def test_rejects_unknown_encode_type():
     with pytest.raises(ValueError):
         VideoDecoder("h264")
+
+
+def held_back_frames(decoder, chunks):
+    """Most frames fed in but not yet returned at any point before flush."""
+    fed = returned = held = 0
+    for chunk in chunks:
+        fed += 1
+        returned += len(decoder.decode(chunk))
+        held = max(held, fed - returned)
+    return held
+
+
+@pytest.mark.parametrize("threads", [2, 4])
+def test_threaded_decoder_returns_the_same_frames(threads):
+    chunks = encode_stream("libx264")
+    single = VideoDecoder(pi.VideoEncodeType.H264)
+    expected = [f for c in chunks for f in single.decode(c)] + single.flush()
+    threaded = VideoDecoder(pi.VideoEncodeType.H264, threads=threads)
+    frames = [f for c in chunks for f in threaded.decode(c)] + threaded.flush()
+
+    assert len(frames) == COUNT
+    for got, want in zip(frames, expected):
+        np.testing.assert_array_equal(got, want)
+
+
+def test_threads_hold_frames_back_until_later_packets_arrive():
+    chunks = encode_stream("libx264")
+    single = held_back_frames(VideoDecoder(pi.VideoEncodeType.H264), chunks)
+    threaded = held_back_frames(VideoDecoder(pi.VideoEncodeType.H264, threads=4), chunks)
+    assert threaded > single
+
+
+@pytest.mark.parametrize("threads", [0, -1, 1.5, "4"])
+def test_rejects_a_thread_count_below_one_or_not_an_int(threads):
+    with pytest.raises(ValueError):
+        VideoDecoder(pi.VideoEncodeType.H264, threads=threads)

@@ -51,6 +51,10 @@ for frame in decoder.decode(packet):          # list of HxWx3 uint8 RGB arrays
     ...
 ```
 
+One decoding thread barely keeps up with an X3's 3840x1920 stream (about 35 fps for 29 sent), and the
+camera then drops the oldest packets. `VideoDecoder(encode_type, threads=4)` decodes on four frame
+threads, about 90 fps, at the cost of about 100 ms more delay, because each thread holds back a frame.
+
 `examples/stream_smoke.py` runs the whole path against a real camera and reports video fps, IMU rate
 and drops: `python examples/stream_smoke.py --seconds 10 --save-frame first.png`.
 
